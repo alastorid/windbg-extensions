@@ -18,10 +18,18 @@ static void PrintStackFrames(UINT count, ULONG64* frames)
 {
 	for (UINT i = 0; i < count; ++i)
 	{
+#if defined(KDEXT_64BIT)
+		dprintf("	%ly\n", frames[i]);
+#else
+		// %ly fail on windbg x86. may be bug...
+		// But command execute `.printf "%ly", 0xDEADBEAF` work
+		//  https://github.com/kkkon/wdbgexts-test-dprintf/blob/master/kktest-dprintf_APIS32/dprintf_APIS32-workaround.cpp
+		//  refer execute_dprintf_sourceline function implement
 		CHAR symbol[MAX_SYMBOL_NAME];
 		ULONG_PTR displacement;
 		GetSymbol((ULONG_PTR)frames[i], symbol, &displacement);
 		dprintf("	%s+0x%x\n", symbol, displacement);
+#endif
 	}
 }
 
